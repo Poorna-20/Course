@@ -1,0 +1,85 @@
+<!-- views/dashboard.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="/css/user-dashboard.css">
+</head>
+<body>
+  <header>
+    <nav class="nav">
+      <div class="logo">
+        Logo
+      </div>
+      <div class="user_details">
+        <div class="usrimg">
+          <!-- <img src="/assets/9009452_4052403.jpg" alt=""> -->
+        </div>
+        <%= user.first_name %>
+      </div>
+    </nav>
+  </header>
+  
+  <div class="container">
+    <div class="menu">
+      <ul>
+        <li>
+          <a href="">Personal Info</a>
+          <a href="">Enrolled Courses</a>
+          <a href="/logout">Logout</a>
+        </li>
+      </ul>
+    </div>
+    <div class="content">
+      <div class="welcome_msg">
+        <h1>Welcome, <%= user.first_name %></h1>
+      </div>
+    
+      <!-- <p>This is your user dashboard.</p> -->
+
+      <h2>Enrolled Courses</h2>
+      <div class="enroll_courses">
+        <ul>
+          <% enrolledCourses.forEach(course => { %>
+            <a class="course_item" href="/course/<%= course.course_id %>">
+              <li>
+                <div class="course_container">
+                  <h3><%= course.title %></h3>
+                  <p><%= course.description %></p>
+                </div>
+              </li>
+            </a>
+          <% }); %>
+        </ul>
+      </div>
+    
+      <h2>Available Courses</h2><br>
+      <div class="available_courses">
+        <ul>
+          <% courses.forEach(course => { %>
+            <li class="course_item">
+              <a href="/course/<%= course.course_id %>">
+                <div class="course_container">
+                  <h3><%= course.title %></h3>
+                  <p><%= course.description %></p>
+                </div>
+              </a>
+              <!-- Add a form to enroll in the course -->
+              <form class="enroll_btn" action="/enroll-course" method="POST">
+                <input type="hidden" name="courseId" value="<%= course.course_id %>">
+                <button type="submit">Enroll</button>
+              </form>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+
+  
+</body>
+</html>

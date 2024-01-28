@@ -1,0 +1,26 @@
+<!-- views/admin-dashboard.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+</head>
+<body>
+  <h1>Welcome <%= user.username %> (Admin)</h1>
+  <p>This is the admin dashboard.</p>
+
+  <h2>Available Courses</h2>
+  <ul>
+    <% courses.forEach(course => { %>
+      <li><%= course.title %> - <%= course.description %></li>
+    <% }); %>
+  </ul>
+
+  <!-- Link to add a new course -->
+  <a href="/add-course">Add a New Course</a>
+
+  <a href="/logout">Logout</a>
+</body>
+</html>
