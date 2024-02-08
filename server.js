@@ -114,6 +114,70 @@ app.get('/logout', (req, res) => {
   });
 });
 
+app.get('/profile',authenticateUser,async (req,res)=>{
+  try {
+    // Fetch the current user's details
+    const userId = req.session.user.user_id;
+    const user = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
+
+    currentUser = await pool.query('SELECT role FROM users WHERE user_id = $1', [userId]);
+
+    res.render('edit-profile', { user: user.rows[0] , currentUser : currentUser.rows[0].role});
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+})
+// Route to display the user profile edit page
+app.get('/edit-profile', authenticateUser, async (req, res) => {
+  try {
+    // Fetch the current user's details
+    const userId = req.session.user.user_id;
+    const user = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
+
+    res.render('edit-profile', { user: user.rows[0] });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route to handle the profile edit form submission
+app.post('/edit-profile', authenticateUser, async (req, res) => {
+  const { firstName, lastName, email } = req.body;
+  const userId = req.session.user.user_id;
+
+  try {
+    // Update the user's profile information in the database
+    await pool.query('UPDATE users SET first_name = $1, last_name = $2, email = $3 WHERE user_id = $4', [
+      firstName,
+      lastName,
+      email,
+      userId
+    ]);
+  
+    currentUser = await pool.query('SELECT role FROM users WHERE user_id = $1', [userId]);
+    // console.log(currentUser);
+  
+    // Check if currentUser.row is defined before accessing its elements
+    if (currentUser.rows && currentUser.rows.length > 0) {
+      if (currentUser.rows[0].role === 'admin') {
+        res.redirect('/admin-dashboard');
+      } else {
+        res.redirect('/dashboard');
+      }
+    } else {
+      // Handle the case where currentUser.row is undefined or empty
+      console.error('Error: currentUser.row is undefined or empty');
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+  
+});
+
+
+
 app.get('/add-course', isAdmin, (req, res) => {
   res.render('add-course', { user: req.session.user });
 });

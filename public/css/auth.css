@@ -75,7 +75,7 @@ body{
     appearance: none;
     width: 20px;
     height: 20px;
-    border: 1px solid #3e91ff;
+    border: 2.5px solid #3e91ff;
     border-radius: 50%;
     outline: none;
     /* box-shadow: 0 0 5px #3e91ff; */
@@ -87,7 +87,7 @@ body{
     display: block;
     width: 60%;
     height: 60%;
-    margin: 20% auto;
+    margin: 22% auto;
     border-radius: 50%;
 }
   

@@ -6,29 +6,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Dashboard</title>
-  <link rel="stylesheet" href="/css/user-dashboard.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 <body>
-  <header>
-    <nav class="nav">
-      <div class="logo">
-        Logo
-      </div>
-      <div class="user_details">
-        <div class="usrimg">
-          <!-- <img src="/assets/9009452_4052403.jpg" alt=""> -->
-        </div>
-        <%= user.first_name %>
-      </div>
-    </nav>
-  </header>
+  <%- include('dashboard_header.ejs') %>
   
   <div class="container">
     <div class="menu">
       <ul>
         <li>
-          <a href="">Personal Info</a>
-          <a href="">Enrolled Courses</a>
+          <a href="/profile">Personal Info</a>
+          <a href="/dashboard">Courses</a>
           <a href="/logout">Logout</a>
         </li>
       </ul>
@@ -56,7 +46,7 @@
         </ul>
       </div>
     
-      <h2>Available Courses</h2><br>
+      <h2>Available Courses</h2>
       <div class="available_courses">
         <ul>
           <% courses.forEach(course => { %>

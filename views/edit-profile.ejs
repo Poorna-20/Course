@@ -1,0 +1,87 @@
+<!-- views/edit-profile.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link rel="stylesheet" href="/css/dashboard.css"> 
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  
+</head>
+<body>
+  <%- include('dashboard_header') %> <!-- Include your header or navigation component -->
+  <div class="container">
+    <div class="menu">
+      <ul>
+        <li>
+          <a href="/profile">Personal Info</a>
+          <% if (currentUser === "admin") { %>
+            <a href="/admin-dashboard">Courses</a>
+          <% } else { %>
+            <a href="/dashboard">Courses</a>
+          <% } %>
+          <a href="/logout">Logout</a>
+        </li>
+      </ul>
+    </div>
+    <div class="content">
+      <div class="edit_profile_btn">
+        <a href="/edit-profile">Edit Profile</a>
+      </div>
+      <div class="profile_box">
+        <div class="user_detailsBox">
+            <div class="name"><h3>First Name</h3></div>
+            <div class="value"><%= user.first_name %></div>
+        </div>
+    
+        <div class="user_detailsBox">
+            <div class="name"><h3>Last Name</h3></div>
+            <div class="value"><%= user.last_name %></div>
+        </div>
+    
+        <div class="user_detailsBox">
+            <div class="name"><h3>Email</h3></div>
+            <div class="value"><%= user.email %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+    
+
+  <div class="wrapper">
+    <div class="container">
+      <div class="close">
+        <ion-icon name="close-circle-outline"></ion-icon>
+      </div>
+      <h1>Edit Profile</h1>
+    <form action="/edit-profile" method="POST">
+      <div class="edit_box">
+          <label for="firstName">First Name:</label>
+          <input type="text" id="firstName" name="firstName" value="<%= user.first_name %>" required>
+      </div>
+      <div class="edit_box">
+          <label for="lastName">Last Name:</label>
+          <input type="text" id="lastName" name="lastName" value="<%= user.last_name %>" required>
+      </div>
+      <div class="edit_box">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" value="<%= user.email %>" required>
+      </div>
+      
+
+      
+
+      
+
+      <button type="submit">Save Changes</button>
+    </form>
+    </div>
+  </div>
+
+  <script src="/js/profile.js"></script>
+</body>
+</html>

@@ -6,21 +6,56 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 <body>
-  <h1>Welcome <%= user.username %> (Admin)</h1>
-  <p>This is the admin dashboard.</p>
+  <%- include('dashboard_header')%>
 
-  <h2>Available Courses</h2>
-  <ul>
-    <% courses.forEach(course => { %>
-      <li><%= course.title %> - <%= course.description %></li>
-    <% }); %>
-  </ul>
+  <div class="container">
+    <div class="menu">
+      <ul>
+        <li>
+          <a href="/profile">Personal Info</a>
+          <a href="/admin-dashboard">Courses</a>
+          <a href="/logout">Logout</a>
+        </li>
+      </ul>
+    </div>
+    <div class="content">
+      <div class="welcome_msg">
+        <h1>Welcome, <%= user.first_name %></h1><span>(Admin)</span>
+        
+      </div>
+      <h3>This is the admin dashboard.</h3>
 
+      
+      <h2>Available Courses</h2>
+      <div class="add_btn">
+        <a href="/add-course">Add a New Course</a>
+      </div>
+
+      <div class="available_courses">
+        <ul>
+          <% courses.forEach(course => { %>
+            <a class="course_item" href="/course/<%= course.course_id %>">
+              <li>
+                <div class="course_container">
+                  <h3><%= course.title %></h3>
+                  <p><%= course.description %></p>
+                </div>
+              </li>
+            </a>
+            <!-- <li><%= course.title %> - <%= course.description %></li> -->
+          <% }); %>
+        </ul>
+      </div>
+    </div>
+  </div>
   <!-- Link to add a new course -->
-  <a href="/add-course">Add a New Course</a>
+  <!-- <a href="/add-course">Add a New Course</a>
 
-  <a href="/logout">Logout</a>
+  <a href="/logout">Logout</a> -->
 </body>
 </html>
