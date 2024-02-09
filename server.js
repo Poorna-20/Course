@@ -186,9 +186,16 @@ app.get('/add-course', isAdmin, (req, res) => {
 app.post('/add-course', isAdmin, async (req, res) => {
   const { title, description } = req.body;
 
+  const userId = req.session.user.user_id;
+
   try {
-    // Insert the new course into the database
-    await pool.query('INSERT INTO courses (title, description) VALUES ($1, $2)', [title, description]);
+    const user = await pool.query('SELECT first_name FROM users WHERE user_id = $1', [userId]);
+    const addedBy = user.rows[0];
+    console.log(addedBy)
+
+    // Insert the new course into the database with the user's name
+    await pool.query('INSERT INTO courses (title, description, added_by) VALUES ($1, $2, $3)', [title, description, addedBy]);
+
 
     // Redirect back to the admin dashboard after adding the course
     res.redirect('/admin-dashboard');

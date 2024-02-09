@@ -6,16 +6,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= course.title %></title>
-
+  <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
-  <h1>Course Details</h1>
+  <%- include('dashboard_header.ejs') %>
   
   <h2><%= course.title %></h2>
   <p><%= course.description %></p>
 
   <% if (isEnrolled) { %>
     <p>You are enrolled in this course.</p>
+    
+    <!-- Display course content -->
+    <div class="course-content">
+      <% content.forEach(item => { %>
+          <!-- Text content -->
+          <div class="content-item">
+            <p><%= item.text %></p>
+          </div>
+          <!-- Video content -->
+          <div class="content-item">
+            <video controls>
+              <source src="<%= item.url %>" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <!-- File content -->
+          <!-- <div class="content-item">
+            <a href="<%= item.url %>" download><%= item.filename %></a>
+          </div> -->
+      <% }) %>
+    </div>
+    
   <% } else { %>
     <!-- Add a form to enroll in the course -->
     <form action="/enroll-course" method="POST">
@@ -24,7 +46,7 @@
     </form>
   <% } %>
 
-  <!-- <a href="/dashboard">Back to User Dashboard</a> -->
-  <a href="/logout">Logout</a>
+  <!-- <a href="/dashboard">Back to User Dashboard</a>   -->
+  <!-- <a href="/logout">Logout</a> -->
 </body>
 </html>
