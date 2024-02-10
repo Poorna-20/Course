@@ -21,13 +21,13 @@ document.addEventListener('DOMContentLoaded',()=>{
             console.log('Error rule')
         }
     });
-    editContainer.addEventListener('click',(event)=>{
-        // event.preventDefault();
-        if (editContainer){
-            editContainer.classList.remove('show-container');
-        }
-        else{
-            console.log('Error rule')
-        }
-    });
+    // editContainer.addEventListener('click',(event)=>{
+    //     // event.preventDefault();
+    //     if (editContainer){
+    //         editContainer.classList.remove('show-container');
+    //     }
+    //     else{
+    //         console.log('Error rule')
+    //     }
+    // });
 });

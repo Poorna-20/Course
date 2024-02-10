@@ -184,17 +184,22 @@ app.get('/add-course', isAdmin, (req, res) => {
 
 // Route for handling the addition of a new course
 app.post('/add-course', isAdmin, async (req, res) => {
-  const { title, description } = req.body;
+  const { title, description,content_text,content_url } = req.body;
 
   const userId = req.session.user.user_id;
 
+
   try {
     const user = await pool.query('SELECT first_name FROM users WHERE user_id = $1', [userId]);
-    const addedBy = user.rows[0];
-    console.log(addedBy)
+    const addedBy = user.rows[0].first_name;
+    // console.log(addedBy)
 
     // Insert the new course into the database with the user's name
-    await pool.query('INSERT INTO courses (title, description, added_by) VALUES ($1, $2, $3)', [title, description, addedBy]);
+
+    const result = await pool.query('INSERT INTO courses (title, description, added_by) VALUES ($1, $2, $3) RETURNING course_id ', [title, description, addedBy]);
+    const courseID = result.rows[0].course_id;
+    // Update the Following Code For Future Purposes
+    await pool.query('INSERT INTO course_content (course_id , text , url) VALUES ($1, $2, $3)',[courseID, content_text, content_url])
 
 
     // Redirect back to the admin dashboard after adding the course
@@ -216,8 +221,11 @@ app.get('/course/:courseId', authenticateUser, async (req, res) => {
     // Check if the user is enrolled in the course
     const isEnrolled = await pool.query('SELECT * FROM enrollments WHERE user_id = $1 AND course_id = $2', [userId, courseId]);
 
+    const courseContent = await pool.query('SELECT * FROM course_content WHERE course_id = $1', [courseId]);
+    console.log(courseContent)
+
     // Render the course content page with details and enrollment status
-    res.render('course-page', { user: req.session.user, course: courseDetails.rows[0], isEnrolled: isEnrolled.rows.length > 0 });
+    res.render('course-page', { user: req.session.user, course: courseDetails.rows[0], isEnrolled: isEnrolled.rows.length > 0 , content: courseContent.rows[0]});
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

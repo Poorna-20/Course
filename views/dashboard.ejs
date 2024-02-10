@@ -38,7 +38,8 @@
               <li>
                 <div class="course_container">
                   <h3><%= course.title %></h3>
-                  <p><%= course.description %></p>
+                  <p><%= course.description %></p><br>
+                  <p>- by <%= course.added_by %></p>
                 </div>
               </li>
             </a>
@@ -54,7 +55,8 @@
               <a href="/course/<%= course.course_id %>">
                 <div class="course_container">
                   <h3><%= course.title %></h3>
-                  <p><%= course.description %></p>
+                  <p><%= course.description %></p><br>
+                  <p>- by <%= course.added_by %></p>
                 </div>
               </a>
               <!-- Add a form to enroll in the course -->

@@ -25,10 +25,10 @@
     </div>
     <div class="content">
       <div class="welcome_msg">
-        <h1>Welcome, <%= user.first_name %></h1><span>(Admin)</span>
+        <h1>Welcome, <span><%= user.first_name %></span></h1><span>(Admin)</span>
         
       </div>
-      <h3>This is the admin dashboard.</h3>
+      <!-- <h3>This is the admin dashboard.</h3> -->
 
       
       <h2>Available Courses</h2>
@@ -43,7 +43,8 @@
               <li>
                 <div class="course_container">
                   <h3><%= course.title %></h3>
-                  <p><%= course.description %></p>
+                  <p><%= course.description %></p><br>
+                  <p>- By <%= course.added_by %></p>
                 </div>
               </li>
             </a>
