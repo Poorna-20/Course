@@ -13,36 +13,37 @@
   
   <h2><%= course.title %></h2>
   <p><%= course.description %></p>
-
-  <% if (isEnrolled) { %>
-    <p>You are enrolled in this course.</p>
-    
-    <!-- Display course content -->
-    <div class="course-content">
-          <!-- Text content -->
-          <div class="content-item">
-            <p><%= content.text %></p>
+  <% if (userRole.role === 'user' ) { %>
+        <% if (isEnrolled) { %>
+          <p>You are enrolled in this course.</p>
+          
+          <!-- Display course content -->
+          <div class="course-content">
+                <!-- Text content -->
+                <div class="content-item">
+                  <p><%= content.text %></p>
+                </div>
+                <!-- Video content -->
+                <div class="content-item">
+                  <a href="<%= content.url %>">Link To the Video</a>
+                  <video controls>
+                    <source src="<%= content.url %>" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+                <!-- File content -->
+                <!-- <div class="content-item">
+                  <a href="<%= content.url %>" download><%= content.filename %></a>
+                </div> -->
           </div>
-          <!-- Video content -->
-          <div class="content-item">
-            <a href="<%= content.url %>">Link To the Video</a>
-            <video controls>
-              <source src="<%= content.url %>" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
-          </div>
-          <!-- File content -->
-          <!-- <div class="content-item">
-            <a href="<%= content.url %>" download><%= content.filename %></a>
-          </div> -->
-    </div>
-    
-  <% } else { %>
-    <!-- Add a form to enroll in the course -->
-    <form action="/enroll-course" method="POST">
-      <input type="hidden" name="courseId" value="<%= course.course_id %>">
-      <button type="submit">Enroll in this Course</button>
-    </form>
+          
+        <% } else { %>
+          <!-- Add a form to enroll in the course -->
+          <form action="/enroll-course" method="POST">
+            <input type="hidden" name="courseId" value="<%= course.course_id %>">
+            <button type="submit">Enroll in this Course</button>
+          </form>
+        <% } %>
   <% } %>
 
   <!-- <a href="/dashboard">Back to User Dashboard</a>   -->

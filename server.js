@@ -3,6 +3,7 @@ const { Pool } = require('pg');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 3000;
@@ -53,27 +54,27 @@ app.get('/', (req, res) => {
 
 app.get('/signup', (req, res) => {
   res.render('signup');
-});
+}); 
 
 app.post('/signup', async (req, res) => {
   const { firstname, lastname, email, password, role } = req.body;
 
   try {
-    // Your existing signup logic
-    const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
 
+    const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
       return res.redirect('/signup');
     }
-    // Insert the new user into the database with the specified role
-    await pool.query('INSERT INTO users (first_name, last_name, email, password, role) VALUES ($1, $2, $3, $4, $5)', [firstname, lastname, email, password, role]);
+
+    await pool.query('INSERT INTO users (first_name, last_name, email, password, role) VALUES ($1, $2, $3, $4, $5)', [firstname, lastname, email, hashedPassword, role]);
 
     res.redirect('/login');
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-
 
 app.get('/login', (req, res) => {
   res.render('login');
@@ -84,18 +85,21 @@ app.post('/login', async (req, res) => {
   const { email, password, role } = req.body;
 
   try {
-    // Your existing login logic
-
-    // Query the user from the database with the specified role
-    const result = await pool.query('SELECT * FROM users WHERE email = $1 AND password = $2 AND role = $3', [email, password, role]);
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
     if (result.rows.length > 0) {
-      // Set the user session
-      req.session.user = result.rows[0];
-      if (role === 'admin') {
-        res.redirect('/admin-dashboard');
+      const user = result.rows[0];
+      const passwordMatch = await bcrypt.compare(password, user.password);
+
+      if (passwordMatch && user.role === role) {
+        req.session.user = user;
+        if (role === 'admin') {
+          res.redirect('/admin-dashboard');
+        } else {
+          res.redirect('/dashboard');
+        }
       } else {
-        res.redirect('/dashboard');
+        res.redirect('/login');
       }
     } else {
       res.redirect('/login');
@@ -116,7 +120,7 @@ app.get('/logout', (req, res) => {
 
 app.get('/profile',authenticateUser,async (req,res)=>{
   try {
-    // Fetch the current user's details
+    
     const userId = req.session.user.user_id;
     const user = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
 
@@ -130,7 +134,7 @@ app.get('/profile',authenticateUser,async (req,res)=>{
 // Route to display the user profile edit page
 app.get('/edit-profile', authenticateUser, async (req, res) => {
   try {
-    // Fetch the current user's details
+    
     const userId = req.session.user.user_id;
     const user = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
 
@@ -146,7 +150,7 @@ app.post('/edit-profile', authenticateUser, async (req, res) => {
   const userId = req.session.user.user_id;
 
   try {
-    // Update the user's profile information in the database
+    
     await pool.query('UPDATE users SET first_name = $1, last_name = $2, email = $3 WHERE user_id = $4', [
       firstName,
       lastName,
@@ -157,7 +161,7 @@ app.post('/edit-profile', authenticateUser, async (req, res) => {
     currentUser = await pool.query('SELECT role FROM users WHERE user_id = $1', [userId]);
     // console.log(currentUser);
   
-    // Check if currentUser.row is defined before accessing its elements
+    
     if (currentUser.rows && currentUser.rows.length > 0) {
       if (currentUser.rows[0].role === 'admin') {
         res.redirect('/admin-dashboard');
@@ -165,7 +169,7 @@ app.post('/edit-profile', authenticateUser, async (req, res) => {
         res.redirect('/dashboard');
       }
     } else {
-      // Handle the case where currentUser.row is undefined or empty
+      
       console.error('Error: currentUser.row is undefined or empty');
       res.status(500).json({ message: 'Internal server error' });
     }
@@ -178,8 +182,16 @@ app.post('/edit-profile', authenticateUser, async (req, res) => {
 
 
 
-app.get('/add-course', isAdmin, (req, res) => {
-  res.render('add-course', { user: req.session.user });
+app.get('/add-course', isAdmin, async (req, res) => {
+  try{
+
+    const courses = await pool.query('SELECT * FROM courses');
+
+    res.render('admin-dashboard', { user: req.session.user , courses:courses });
+  } catch(error){
+    res.status(500),json({message:error.message})
+  }
+  
 });
 
 // Route for handling the addition of a new course
@@ -194,15 +206,14 @@ app.post('/add-course', isAdmin, async (req, res) => {
     const addedBy = user.rows[0].first_name;
     // console.log(addedBy)
 
-    // Insert the new course into the database with the user's name
 
     const result = await pool.query('INSERT INTO courses (title, description, added_by) VALUES ($1, $2, $3) RETURNING course_id ', [title, description, addedBy]);
     const courseID = result.rows[0].course_id;
-    // Update the Following Code For Future Purposes
+    
     await pool.query('INSERT INTO course_content (course_id , text , url) VALUES ($1, $2, $3)',[courseID, content_text, content_url])
 
 
-    // Redirect back to the admin dashboard after adding the course
+    
     res.redirect('/admin-dashboard');
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -215,19 +226,23 @@ app.get('/course/:courseId', authenticateUser, async (req, res) => {
   const userId = req.session.user.user_id;
 
   try {
-    // Query course details
+    
     const courseDetails = await pool.query('SELECT * FROM courses WHERE course_id = $1', [courseId]);
 
-    // Check if the user is enrolled in the course
+    
     const isEnrolled = await pool.query('SELECT * FROM enrollments WHERE user_id = $1 AND course_id = $2', [userId, courseId]);
 
     const courseContent = await pool.query('SELECT * FROM course_content WHERE course_id = $1', [courseId]);
-    console.log(courseContent)
+    
+    const userRole = await pool.query('SELECT role FROM users WHERE user_id = $1', [userId]);
+
+    // console.log("Course Content:", courseContent);
 
     // Render the course content page with details and enrollment status
-    res.render('course-page', { user: req.session.user, course: courseDetails.rows[0], isEnrolled: isEnrolled.rows.length > 0 , content: courseContent.rows[0]});
+    res.render('course-page', { user: req.session.user, course: courseDetails.rows[0], isEnrolled: isEnrolled.rows.length > 0 , content: courseContent.rows[0],userRole : userRole.rows[0]});
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
@@ -236,16 +251,16 @@ app.post('/enroll-course', authenticateUser, async (req, res) => {
   const userId = req.session.user.user_id;
 
   try {
-    // Check if the user is already enrolled in the course
+    
     const existingEnrollment = await pool.query('SELECT * FROM enrollments WHERE user_id = $1 AND course_id = $2', [userId, courseId]);
 
     if (existingEnrollment.rows.length === 0) {
-      // If not enrolled, insert a new enrollment record
+      
 
       await pool.query('INSERT INTO enrollments (user_id, course_id) VALUES ($1, $2)', [userId, courseId]);
     }
 
-    // Redirect back to the user dashboard after enrollment
+    
     res.redirect('/dashboard');
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -256,15 +271,15 @@ app.post('/enroll-course', authenticateUser, async (req, res) => {
 
 app.get('/dashboard', authenticateUser, async(req, res) => {
   try {
-    // Query all courses from the database
+    
     const courses =  await pool.query('SELECT * FROM courses');
 
     const userId = req.session.user.user_id;
 
-    // Query enrolled courses for the user
+    
     const enrolledCourses = await pool.query('SELECT courses.* FROM courses JOIN enrollments ON courses.course_id = enrollments.course_id WHERE enrollments.user_id = $1', [userId]);
 
-    // Render the user dashboard with the list of courses
+    
     res.render('dashboard', { user: req.session.user, enrolledCourses: enrolledCourses.rows , courses: courses.rows });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -273,9 +288,9 @@ app.get('/dashboard', authenticateUser, async(req, res) => {
 
 app.get('/admin-dashboard', isAdmin, async(req, res) => {
   try {
-    // Query all courses from the database
+   
     const courses = await pool.query('SELECT * FROM courses');
-    // Render the admin dashboard with the list of courses
+    
     res.render('admin-dashboard', { user: req.session.user, courses: courses.rows });
   } catch (error) {
     res.status(500).json({ message: error.message });

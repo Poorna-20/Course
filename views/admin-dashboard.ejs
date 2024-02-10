@@ -38,25 +38,75 @@
 
       <div class="available_courses">
         <ul>
-          <% courses.forEach(course => { %>
-            <a class="course_item" href="/course/<%= course.course_id %>">
-              <li>
-                <div class="course_container">
-                  <h3><%= course.title %></h3>
-                  <p><%= course.description %></p><br>
-                  <p>- By <%= course.added_by %></p>
-                </div>
-              </li>
-            </a>
-            <!-- <li><%= course.title %> - <%= course.description %></li> -->
-          <% }); %>
+          <% if (courses && courses.length > 0) { %>
+            <% courses.forEach(course => { %>
+              <a class="course_item" href="/course/<%= course.course_id %>">
+                <li>
+                  <div class="course_container">
+                    <h3><%= course.title %></h3>
+                    <p><%= course.description %></p><br>
+                    <p>- By <%= course.added_by %></p>
+                  </div>
+                </li>
+              </a>
+              <!-- <li><%= course.title %> - <%= course.description %></li> -->
+            <% }); %>
+          <% } %>  
         </ul>
       </div>
     </div>
   </div>
   <!-- Link to add a new course -->
-  <!-- <a href="/add-course">Add a New Course</a>
+  <!--  <a href="/add-course">Add a New Course</a> -->
+    
+  <!-- <a href="/logout">Logout</a>  -->
 
-  <a href="/logout">Logout</a> -->
+  <div class="wrapper">
+    <div class="container">
+      <div class="close">
+        <ion-icon name="close-circle-outline"></ion-icon>
+      </div>
+      <h1>Add a New Course</h1>
+      <form action="/add-course" method="POST">
+        <div class="edit_box">
+          <label for="title">Course Title:</label>
+          <input type="text" id="title" name="title" required>
+        </div>
+        <div class="edit_box">
+          <label for="description">Course Description:</label>
+          <textarea id="description" rows="3" cols="60" name="description" required></textarea>
+        </div>
+        <div class="edit_box">
+          <label for="content_text">Content :</label>
+          <textarea id="content_text" rows="10" cols="60" name="content_text"></textarea><br>
+        </div>
+        <div class="edit_box">
+          <label for="content_url">Video URL:</label>
+          <input type="text" id="content_url" name="content_url"><br>
+        </div>
+        
+        
+        
+    
+        <!-- <label for="content_type">Content Type:</label>
+        <select id="content_type" name="content_type">
+          <option value="text">Text</option>
+          <option value="video">Video</option>
+          <option value="file">File</option>
+        </select><br> -->
+        
+        
+        
+        
+        <!-- <label for="content_filename"> Filename:</label>
+        <input type="text" id="content_filename" name="content_filename"><br> -->
+        
+        
+        <button type="submit">Add Course</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/profile.js"></script>
 </body>
 </html>

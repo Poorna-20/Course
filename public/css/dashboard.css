@@ -113,7 +113,8 @@ header .nav{
     padding-left:25px ;
 }
 .menu ul li a:hover{
-    background-color: #cde3ff;
+    background-color: #4c9aff;
+    color: #fff;
 }
 .content{
     width: 75%;
@@ -163,8 +164,10 @@ header .nav{
     border-radius: 8px;
     box-shadow: 0 0 30px rgba(0,0,0,0.1);
     overflow: hidden;
-    background-color: #333;
+    position: relative;
+
 }
+
 .course_container{
     /* background-color: #3e91ff; */
     /* border: 2px solid #525252; */
@@ -243,8 +246,8 @@ header .nav{
 
 
 .wrapper{
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     background-color: rgba(0,0,0,0.8);
     position: absolute;
     top: 0;
@@ -266,6 +269,7 @@ header .nav{
     display: flex;
     flex-direction: column;
     max-width: 40%;
+    height: auto;
     justify-content: center;
     align-items: center;
     border-radius: 10px;
@@ -275,18 +279,18 @@ header .nav{
 }
 .container form .edit_box{
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-block: 18px;
+    flex-direction: column;
+    margin-block: 16px;
 }
 .edit_box label{
-    font-size: 23px;
+    font-size: 18px;
     font-weight: 500;
-    margin-right: 20px;
+    /* margin-right: 20px; */
 }
 
 .edit_box input{
-    font-size: 21px;
+    width: max-content;
+    font-size: 16px;
     padding: 5px 10px;
     border: none;
     outline: none;
@@ -308,4 +312,20 @@ header .nav{
     cursor: pointer;
     font-size: 30px;
     font-weight: 500;
+}
+
+
+
+
+.edit_box textarea{
+    /* width: 80%; */
+    padding: 10px;
+    font-family: 'Poppins', sans-serif;
+    border: 2px solid #333;
+    border-radius: 5px;
+    resize: none;
+    font-size: 13px;
+}
+.edit_box textarea:focus{
+    border: 2px solid #1379ff;
 }
