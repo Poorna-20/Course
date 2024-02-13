@@ -24,7 +24,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname,"public")));
 
 app.use(session({
-  secret: 'your-secret-key',
+  secret: 'b97166529585db2bbb62cc449c7ba36a',
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false } // Set to true in production if using HTTPS
