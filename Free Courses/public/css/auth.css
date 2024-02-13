@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800;900&display=swap');
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    background:url(/assets/img.jpeg);
+    background-size: contain;
+    height: 100dvh;
+    width: 100dvw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
+}
+.container{
+    background: transparent;
+    backdrop-filter: blur(20px);
+    padding: 20px;
+    max-width: 420px;
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 0 100px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.container h1{
+    text-align: center;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 35px;
+}
+.form {
+    width: 380px;
+    margin: 13px;
+}
+.inp_con{
+    margin: 20px 10px;
+}
+.inp_con label{
+    margin-bottom: 70px;
+    font-size: 18px;
+    color: #525252;
+}
+.inp_con input{
+    width: 100%;
+    height: 30px;
+    border: none;
+    outline :none;
+    border-bottom: 2px solid #333;
+    font-size: 16px;
+    background: transparent;
+    backdrop-filter: blur(5px);
+}
+.inp_con input:focus{
+    border-bottom: 2px solid #3e91ff;
+}
+.select_con{
+    padding: 10px;
+    font-size: 18px;
+    color: #525252;
+    /* background-color: aqua; */
+}
+.select_con .radio_con{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    column-gap: 50px;
+    margin-top: 10px;
+}
+.radio input[type='radio'] {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid #3e91ff;
+    border-radius: 50%;
+    outline: none;
+    /* box-shadow: 0 0 5px #3e91ff; */
+    transition: box-shadow 0.3s ease;
+}
+  
+.radio input[type='radio']:before {
+    content: '';
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 22% auto;
+    border-radius: 50%;
+}
+  
+.radio_con input[type='radio']:checked:before {
+    background: #3e91ff;
+}
+.form .btn{
+    width: 100%;
+    padding: 13px 0;
+    font-size: 18px;
+    color: #fff;
+    background-color: #3e91ff;
+    border: none;
+    border-radius: 7px;
+    outline: none;
+    cursor: pointer;
+    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+}
+.container p{
+    font-size: 15px;
+}

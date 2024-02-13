@@ -1,0 +1,75 @@
+<!-- views/dashboard.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+  <%- include('dashboard_header.ejs') %>
+  
+  <div class="container">
+    <div class="menu">
+      <ul>
+        <li>
+          <a href="/profile">Personal Info</a>
+          <a href="/dashboard">Courses</a>
+          <a href="/logout">Logout</a>
+        </li>
+      </ul>
+    </div>
+    <div class="content">
+      <div class="welcome_msg">
+        <h1>Welcome, <span><%= user.first_name %></span></h1>
+      </div>
+    
+      <!-- <p>This is your user dashboard.</p> -->
+
+      <h2>Enrolled Courses</h2>
+      <div class="enroll_courses">
+        <ul>
+          <% enrolledCourses.forEach(course => { %>
+            <a class="course_item" href="/course/<%= course.course_id %>">
+              <li>
+                <div class="course_container">
+                  <h3><%= course.title %></h3>
+                  <p><%= course.description %></p><br>
+                  <p>- by <%= course.added_by %></p>
+                </div>
+              </li>
+            </a>
+          <% }); %>
+        </ul>
+      </div>
+    
+      <h2>Available Courses</h2>
+      <div class="available_courses">
+        <ul>
+          <% courses.forEach(course => { %>
+            <li class="course_item">
+              <a href="/course/<%= course.course_id %>">
+                <div class="course_container">
+                  <h3><%= course.title %></h3>
+                  <p><%= course.description %></p><br>
+                  <p>- by <%= course.added_by %></p>
+                </div>
+              </a>
+              <!-- Add a form to enroll in the course -->
+              <form class="enroll_btn" action="/enroll-course" method="POST">
+                <input type="hidden" name="courseId" value="<%= course.course_id %>">
+                <button type="submit">Enroll</button>
+              </form>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+    </div>
+  </div>
+   
+</body>
+</html>
