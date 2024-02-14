@@ -1,1 +1,1 @@
-npm i express pg ejs express-session boddy-parser path bcrypt nodemon
+npm i express pg ejs express-session body-parser path bcrypt nodemon
