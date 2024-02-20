@@ -7,46 +7,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= course.title %></title>
   <link rel="stylesheet" href="/css/dashboard.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    h2 {
+      margin-top: 20px;
+    }
+    .course-description {
+      margin-bottom: 20px;
+    }
+    .course-content {
+      margin-top: 20px;
+    }
+    .content-item {
+      margin-bottom: 20px;
+    }
+    video {
+      width: 100%;
+    }
+    form {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
   <%- include('dashboard_header.ejs') %>
   
   <h2><%= course.title %></h2>
   <p><%= course.description %></p>
-  <% if (userRole.role === 'user' ) { %>
-        <% if (isEnrolled) { %>
-          <p>You are enrolled in this course.</p>
-          
-          <!-- Display course content -->
-          <div class="course-content">
-                <!-- Text content -->
-                <div class="content-item">
-                  <p><%= content.text %></p>
-                </div>
-                <!-- Video content -->
-                <div class="content-item">
-                  <a href="<%= content.url %>">Link To the Video</a>
-                  <video controls>
-                    <source src="<%= content.url %>" type="video/mp4">
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-                <!-- File content -->
-                <!-- <div class="content-item">
-                  <a href="<%= content.url %>" download><%= content.filename %></a>
-                </div> -->
+  
+  <% if (userRole && userRole.role === 'user') { %>
+    <% if (isEnrolled) { %>
+      <p>You are enrolled in this course.</p>
+      
+      <!-- Display course content -->
+      <div class="course-content">
+        <% course.contents.forEach(content => { %>
+          <div class="content-item">
+            <!-- Text content -->
+            <% if (content.text) { %>
+              <p><%= content.text %></p>
+            <% } %>
+            
+            YouTube video
+            <% if (content.url) { %>
+              <div class="video-container">
+                <iframe width="560" height="315" src="<%= content.url %>"></iframe>
+              </div>
+            <% } %>
           </div>
-          
-        <% } else { %>
-          <!-- Add a form to enroll in the course -->
-          <form action="/enroll-course" method="POST">
-            <input type="hidden" name="courseId" value="<%= course.course_id %>">
-            <button type="submit">Enroll in this Course</button>
-          </form>
-        <% } %>
+        <% }); %>
+      </div>
+      
+    <% } else { %>
+      <!-- Add a form to enroll in the course -->
+      <form action="/enroll-course" method="POST">
+        <input type="hidden" name="courseId" value="<%= course.id %>">
+        <button type="submit">Enroll in this Course</button>
+      </form>
+    <% } %>
   <% } %>
 
-  <!-- <a href="/dashboard">Back to User Dashboard</a>   -->
+  <!-- <a href="/dashboard">Back to User Dashboard</a> -->
   <!-- <a href="/logout">Logout</a> -->
+  
 </body>
 </html>

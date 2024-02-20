@@ -34,12 +34,12 @@
       <div class="profile_box">
         <div class="user_detailsBox">
             <div class="name"><h3>First Name</h3></div>
-            <div class="value"><%= user.first_name %></div>
+            <div class="value"><%= user.firstName %></div>
         </div>
     
         <div class="user_detailsBox">
             <div class="name"><h3>Last Name</h3></div>
-            <div class="value"><%= user.last_name %></div>
+            <div class="value"><%= user.lastName %></div>
         </div>
     
         <div class="user_detailsBox">
@@ -61,11 +61,11 @@
     <form action="/edit-profile" method="POST">
       <div class="edit_box">
           <label for="firstName">First Name:</label>
-          <input type="text" id="firstName" name="firstName" value="<%= user.first_name %>" required>
+          <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>" required>
       </div>
       <div class="edit_box">
           <label for="lastName">Last Name:</label>
-          <input type="text" id="lastName" name="lastName" value="<%= user.last_name %>" required>
+          <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>" required>
       </div>
       <div class="edit_box">
           <label for="email">Email:</label>

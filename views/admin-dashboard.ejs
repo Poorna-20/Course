@@ -25,7 +25,7 @@
     </div>
     <div class="content">
       <div class="welcome_msg">
-        <h1>Welcome, <span><%= user.first_name %></span></h1><span>(Admin)</span>
+        <h1>Welcome, <span><%= user.firstName %></span></h1><span>(Admin)</span>
         
       </div>
       <!-- <h3>This is the admin dashboard.</h3> -->
@@ -38,14 +38,14 @@
 
       <div class="available_courses">
         <ul>
-          <% if (courses && courses.length > 0) { %>
+          <% if (courses) { %>
             <% courses.forEach(course => { %>
-              <a class="course_item" href="/course/<%= course.course_id %>">
+              <a class="course_item" href="/course/<%= course.id %>">
                 <li>
                   <div class="course_container">
                     <h3><%= course.title %></h3>
                     <p><%= course.description %></p><br>
-                    <p>- By <%= course.added_by %></p>
+                    <p>- By <%= course.addedBy %></p>
                   </div>
                 </li>
               </a>
@@ -78,11 +78,11 @@
         </div>
         <div class="edit_box">
           <label for="content_text">Content :</label>
-          <textarea id="content_text" rows="10" cols="60" name="content_text"></textarea><br>
+          <textarea id="content_text" rows="10" cols="60" name="contentText"></textarea><br>
         </div>
         <div class="edit_box">
           <label for="content_url">Video URL:</label>
-          <input type="text" id="content_url" name="content_url"><br>
+          <input type="text" id="content_url" name="contentUrl"><br>
         </div>
         
         

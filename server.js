@@ -1,50 +1,172 @@
 const express = require('express');
-const { Pool } = require('pg');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const { Sequelize, DataTypes } = require('sequelize');
 
 const app = express();
 const PORT = 3000;
 
-const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'lms',
-  password: 'postgre1',
-  port: 5432,
-});
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, "public")));
 
+// Set up body-parser and session middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-app.set('view engine', 'ejs');
-
-app.use(express.static(path.join(__dirname,"public")));
-
 app.use(session({
   secret: 'your-secret-key',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // Set to true in production if using HTTPS
 }));
 
-function authenticateUser(req, res, next) {
-  if (req.session && req.session.user) {
+
+const sequelize = new Sequelize('lms_db_dev', 'postgres', '12345', {
+  host: 'localhost',
+  dialect: 'postgres'
+});
+
+const User = sequelize.define('User', {
+  firstName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  }
+}, {
+  tableName: 'Users',
+});
+
+const Course = sequelize.define('Course', {
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  addedBy: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+}, {
+  tableName: 'Courses',
+});
+
+const CourseContent = sequelize.define('CourseContent', {
+  text: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  url: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+}, {
+  tableName: 'CourseContents',
+});
+
+const Enrollment = sequelize.define('Enrollment', {
+  // userId: {
+  //   type: DataTypes.INTEGER,
+  //   allowNull: false,
+  // },
+  // courseId: {
+  //   type: DataTypes.INTEGER,
+  //   allowNull: false,
+  // }
+}, {
+  tableName: 'Enrollments',
+});
+
+Course.hasMany(CourseContent, { foreignKey: 'courseId', as: 'contents' });
+CourseContent.belongsTo(Course, { foreignKey: 'courseId' });
+
+
+Course.hasMany(Enrollment, { foreignKey: 'courseId' });
+Enrollment.belongsTo(Course, { foreignKey: 'courseId' });
+
+User.hasMany(Enrollment, { foreignKey: 'userId' });
+Enrollment.belongsTo(User, { foreignKey: 'userId' });
+
+// Initialize Passport.js
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Configure Passport.js to use a local strategy for authentication
+passport.use(new LocalStrategy({
+  usernameField: 'email',
+  passwordField: 'password'
+}, async (email, password, done) => {
+  try {
+    // Find user by email
+    const user = await User.findOne({ where: { email } });
+
+    // If user not found or password doesn't match, return false
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return done(null, false);
+    }
+
+
+    // If authentication succeeds, return the user object
+    return done(null, user);
+  } catch (error) {
+    return done(error);
+  }
+}));
+
+// Serialize user object to store in session
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+// Deserialize user object from session
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findByPk(id);
+    done(null, user);
+  } catch (error) {
+    done(error);
+  }
+});
+
+// Middleware to check if user is authenticated
+function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
     return next();
   } else {
     res.redirect('/login');
   }
 }
 
+// Middleware to check if user is an admin
 function isAdmin(req, res, next) {
-  if (req.session && req.session.user && req.session.user.role === 'admin') {
+  if (req.isAuthenticated() && req.user  && req.user.role === 'admin') {
     return next();
   } else {
     res.redirect('/login');
   }
 }
+
+
 
 // Routes for Signup, Login, and Logout
 
@@ -54,21 +176,21 @@ app.get('/', (req, res) => {
 
 app.get('/signup', (req, res) => {
   res.render('signup');
-}); 
+});
 
 app.post('/signup', async (req, res) => {
-  const { firstname, lastname, email, password, role } = req.body;
+  const { firstName, lastName, email, password, role } = req.body;
 
   try {
-    
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
 
-    const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (existingUser.rows.length > 0) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
       return res.redirect('/signup');
     }
 
-    await pool.query('INSERT INTO users (first_name, last_name, email, password, role) VALUES ($1, $2, $3, $4, $5)', [firstname, lastname, email, hashedPassword, role]);
+    await User.create({ firstName, lastName, email, password: hashedPassword, role });
 
     res.redirect('/login');
   } catch (error) {
@@ -80,223 +202,193 @@ app.get('/login', (req, res) => {
   res.render('login');
 });
 
-
-app.post('/login', async (req, res) => {
-  const { email, password, role } = req.body;
-
-  try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
-    if (result.rows.length > 0) {
-      const user = result.rows[0];
-      const passwordMatch = await bcrypt.compare(password, user.password);
-
-      if (passwordMatch && user.role === role) {
-        req.session.user = user;
-        if (role === 'admin') {
-          res.redirect('/admin-dashboard');
-        } else {
-          res.redirect('/dashboard');
-        }
-      } else {
-        res.redirect('/login');
-      }
-    } else {
-      res.redirect('/login');
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+app.post('/login', passport.authenticate('local', {
+  failureRedirect: '/login',
+}),(req,res)=>{
+  if (req.user.role === 'admin'){
+    res.redirect('/admin-dashboard');
+  }
+  else{
+    res.redirect('/dashboard');
   }
 });
 
 app.get('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.redirect('/');
-    }
+  req.logout(function(err) {
+    if (err) { return next(err); }
     res.redirect('/login');
   });
 });
 
-app.get('/profile',authenticateUser,async (req,res)=>{
+app.get('/profile', isAuthenticated, async (req, res) => {
   try {
-    
-    const userId = req.session.user.user_id;
-    const user = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
 
-    currentUser = await pool.query('SELECT role FROM users WHERE user_id = $1', [userId]);
+    const userId = req.user.id;
+    const user = await User.findByPk(userId);
 
-    res.render('edit-profile', { user: user.rows[0] , currentUser : currentUser.rows[0].role});
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-})
-// Route to display the user profile edit page
-app.get('/edit-profile', authenticateUser, async (req, res) => {
-  try {
-    
-    const userId = req.session.user.user_id;
-    const user = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
+    const currentUserRole = await User.findOne({ attributes: ['role'], where: { id: userId } });
 
-    res.render('edit-profile', { user: user.rows[0] });
+    res.render('edit-profile', { user, currentUser: currentUserRole ? currentUserRole.role : null });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Route to handle the profile edit form submission
-app.post('/edit-profile', authenticateUser, async (req, res) => {
+app.get('/edit-profile', isAuthenticated, async (req, res) => {
+  try {
+
+    const userId = req.user.id;
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.render('edit-profile', { user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/edit-profile', isAuthenticated, async (req, res) => {
   const { firstName, lastName, email } = req.body;
-  const userId = req.session.user.user_id;
+  const userId = req.user.id;
 
   try {
-    
-    await pool.query('UPDATE users SET first_name = $1, last_name = $2, email = $3 WHERE user_id = $4', [
-      firstName,
-      lastName,
-      email,
-      userId
-    ]);
-  
-    currentUser = await pool.query('SELECT role FROM users WHERE user_id = $1', [userId]);
-    // console.log(currentUser);
-  
-    
-    if (currentUser.rows && currentUser.rows.length > 0) {
-      if (currentUser.rows[0].role === 'admin') {
+
+    await User.update({ firstName, lastName, email }, { where: { id: userId } });
+
+    const currentUserRole = await User.findOne({ attributes: ['role'], where: { id: userId } });
+
+    if (currentUserRole) {
+      if (currentUserRole.role === 'admin') {
         res.redirect('/admin-dashboard');
       } else {
         res.redirect('/dashboard');
       }
     } else {
-      
+
       console.error('Error: currentUser.row is undefined or empty');
       res.status(500).json({ message: 'Internal server error' });
     }
-  
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-  
+
 });
-
-
 
 app.get('/add-course', isAdmin, async (req, res) => {
-  try{
+  try {
 
-    const courses = await pool.query('SELECT * FROM courses');
+    const courses = await Course.findAll();
 
-    res.render('admin-dashboard', { user: req.session.user , courses:courses });
-  } catch(error){
-    res.status(500),json({message:error.message})
+    res.render('admin-dashboard', { user: req.user, courses });
+  } catch (error) {
+    res.status(500), json({ message: error.message })
   }
-  
+
 });
 
-// Route for handling the addition of a new course
 app.post('/add-course', isAdmin, async (req, res) => {
-  const { title, description,content_text,content_url } = req.body;
+  const { title, description, contentText, contentUrl } = req.body;
 
-  const userId = req.session.user.user_id;
-
+  const userId = req.user.id;
 
   try {
-    const user = await pool.query('SELECT first_name FROM users WHERE user_id = $1', [userId]);
-    const addedBy = user.rows[0].first_name;
-    // console.log(addedBy)
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User Not Found' });
+    }
 
+    const course = await Course.create({ title, description, addedBy: user.firstName });
+    if (!course) {
+      return res.status(500).json({ message: 'Failed to create course' });
+    }
+    await CourseContent.create({ courseId: course.id, text: contentText, url: contentUrl });
 
-    const result = await pool.query('INSERT INTO courses (title, description, added_by) VALUES ($1, $2, $3) RETURNING course_id ', [title, description, addedBy]);
-    const courseID = result.rows[0].course_id;
-    
-    await pool.query('INSERT INTO course_content (course_id , text , url) VALUES ($1, $2, $3)',[courseID, content_text, content_url])
-
-
-    
     res.redirect('/admin-dashboard');
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Route to display individual course content
-app.get('/course/:courseId', authenticateUser, async (req, res) => {
+app.get('/course/:courseId', isAuthenticated, async (req, res) => {
   const courseId = req.params.courseId;
-  const userId = req.session.user.user_id;
+  const userId = req.user.id;
 
   try {
-    
-    const courseDetails = await pool.query('SELECT * FROM courses WHERE course_id = $1', [courseId]);
+    const course = await Course.findByPk(courseId, { include: { model: CourseContent, as:	"contents" } });
+    const isEnrolled = await Enrollment.findOne({ where: { userId, courseId } });
 
-    
-    const isEnrolled = await pool.query('SELECT * FROM enrollments WHERE user_id = $1 AND course_id = $2', [userId, courseId]);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
 
-    const courseContent = await pool.query('SELECT * FROM course_content WHERE course_id = $1', [courseId]);
-    
-    const userRole = await pool.query('SELECT role FROM users WHERE user_id = $1', [userId]);
+    const userRole = await User.findOne({ where: { id: userId } });
 
-    // console.log("Course Content:", courseContent);
-
-    // Render the course content page with details and enrollment status
-    res.render('course-page', { user: req.session.user, course: courseDetails.rows[0], isEnrolled: isEnrolled.rows.length > 0 , content: courseContent.rows[0],userRole : userRole.rows[0]});
+    res.render('course-page', { user: req.user, course, isEnrolled: !!isEnrolled, userRole });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-app.post('/enroll-course', authenticateUser, async (req, res) => {
-  const { courseId } = req.body;
-  const userId = req.session.user.user_id;
-
+app.post('/enroll-course', isAuthenticated, async (req, res) => {
   try {
-    
-    const existingEnrollment = await pool.query('SELECT * FROM enrollments WHERE user_id = $1 AND course_id = $2', [userId, courseId]);
-
-    if (existingEnrollment.rows.length === 0) {
-      
-
-      await pool.query('INSERT INTO enrollments (user_id, course_id) VALUES ($1, $2)', [userId, courseId]);
+    const { courseId } = req.body;
+    const userId = req.user.id;
+    console.log(userId);
+    // Validate courseId
+    if (!courseId || isNaN(courseId)) {
+      return res.status(400).json({ message: 'Invalid courseId' });
     }
 
-    
+    const existingEnrollment = await Enrollment.findOne({ where: { userId, courseId } });
+
+    if (!existingEnrollment) {
+      await Enrollment.create({ userId, courseId });
+    }
     res.redirect('/dashboard');
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Protected routes
-
-app.get('/dashboard', authenticateUser, async(req, res) => {
+app.get('/dashboard', isAuthenticated, async (req, res) => {
   try {
-    
-    const courses =  await pool.query('SELECT * FROM courses');
 
-    const userId = req.session.user.user_id;
+    const courses = await Course.findAll();
 
-    
-    const enrolledCourses = await pool.query('SELECT courses.* FROM courses JOIN enrollments ON courses.course_id = enrollments.course_id WHERE enrollments.user_id = $1', [userId]);
+    const userId = req.user.id;
 
-    
-    res.render('dashboard', { user: req.session.user, enrolledCourses: enrolledCourses.rows , courses: courses.rows });
+
+    const enrolledCourses = await Enrollment.findAll({
+      where: { userId },
+      include: { model: Course }
+    });
+    console.log(enrolledCourses);
+
+    res.render('dashboard', { user: req.user, enrolledCourses, courses });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-app.get('/admin-dashboard', isAdmin, async(req, res) => {
+app.get('/admin-dashboard', isAdmin, async (req, res) => {
   try {
-   
-    const courses = await pool.query('SELECT * FROM courses');
-    
-    res.render('admin-dashboard', { user: req.session.user, courses: courses.rows });
+
+    const courses = await Course.findAll();
+
+    res.render('admin-dashboard', { user: req.user, courses });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+
+module.exports = app;
