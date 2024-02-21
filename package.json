@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "jest",
-    "start": "nodemon -e js,ejs"
+    "start": "nodemon -e js,ejs",
+    "start:prod": "node server.js"
   },
   "keywords": [],
   "author": "",
