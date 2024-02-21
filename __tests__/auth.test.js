@@ -1,22 +1,22 @@
 const request = require('supertest');
-const app = require('../server');
+const app = require('../app');
 
-const PORT = 3000;
+// const PORT = process.env.PORT || 3000;
 
-let server;
+// let server;
 
-beforeAll(done => {
-  // Start the server
-  server = app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-    done();
-  });
-});
+// beforeAll(done => {
+//   // Start the server
+//   server = app.listen(PORT, () => {
+//     console.log(`Server is running on http://localhost:${PORT}`);
+//     done();
+//   });
+// });
 
-afterAll(done => {
-  // Close the server
-  server.close(done);
-});
+// afterAll(done => {
+//   // Close the server
+//   server.close(done);
+// });
 
 describe('Authentication Tests', () => {
     describe('Signup Process', () => {
