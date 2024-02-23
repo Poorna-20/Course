@@ -256,11 +256,13 @@ app.post('/edit-profile', isAuthenticated, async (req, res) => {
   const userId = req.user.id;
 
   try {
-
+    // Update user profile
     await User.update({ firstName, lastName, email }, { where: { id: userId } });
 
+    // Retrieve user role
     const currentUserRole = await User.findOne({ attributes: ['role'], where: { id: userId } });
 
+    // Check user role and redirect accordingly
     if (currentUserRole) {
       if (currentUserRole.role === 'admin') {
         res.redirect('/admin-dashboard');
@@ -268,15 +270,13 @@ app.post('/edit-profile', isAuthenticated, async (req, res) => {
         res.redirect('/dashboard');
       }
     } else {
-
-      console.error('Error: currentUser.row is undefined or empty');
+      console.error('Error: currentUserRole is undefined or empty');
       res.status(500).json({ message: 'Internal server error' });
     }
-
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ message: 'Error updating user profile' });
   }
-
 });
 
 app.get('/add-course', isAdmin, async (req, res) => {

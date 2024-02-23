@@ -1,10 +1,9 @@
 document.addEventListener('DOMContentLoaded',()=>{
     const btn = document.querySelector('.edit_profile_btn a'),
-
         addCourseBtn = document.querySelector('.add_btn a'),
-
         editContainer = document.querySelector('.wrapper'),
         closeBtn = document.querySelector('.close');
+        body = document.body;
     if (btn){
         btn.addEventListener('click',(event)=>{
             event.preventDefault();
@@ -21,6 +20,7 @@ document.addEventListener('DOMContentLoaded',()=>{
             event.preventDefault();
             if (editContainer){
                 editContainer.classList.add('show-container');
+                body.classList.add('hidden');
             }
             else{
                 console.log('Error rule')
@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         // event.preventDefault();
         if (editContainer){
             editContainer.classList.remove('show-container');
+            body.classList.remove('hidden');
         }
         else{
             console.log('Error rule')

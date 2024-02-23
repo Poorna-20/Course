@@ -86,6 +86,27 @@
     <% } %>
   <% } %>
 
+  <% if (userRole && userRole.role === 'admin') { %>
+      <!-- Display course content -->
+      <div class="course-content">
+        <% course.contents.forEach(content => { %>
+          <div class="content-item">
+            <!-- Text content -->
+            <% if (content.text) { %>
+              <p><%= content.text %></p>
+            <% } %>
+            
+            YouTube video
+            <% if (content.url) { %>
+              <div class="video-container">
+                <iframe width="560" height="315" src="<%= content.url %>"></iframe>
+              </div>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+      
+    <% } %>
   <!-- <a href="/dashboard">Back to User Dashboard</a> -->
   <!-- <a href="/logout">Logout</a> -->
   
